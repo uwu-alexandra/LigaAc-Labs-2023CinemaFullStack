@@ -1,0 +1,3 @@
+SEQUENCE "movie_id"
+INCREMENT BY 1
+NO CYCLE;

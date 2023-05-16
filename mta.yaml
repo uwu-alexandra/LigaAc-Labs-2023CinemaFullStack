@@ -3,51 +3,62 @@ ID: Cinema
 description: A simple CAP project.
 version: 1.0.0
 modules:
-- name: Cinema-srv
-  type: nodejs
-  path: gen/srv
-  requires:
-  - name: Cinema-db
-  provides:
-  - name: srv-api
-    properties:
-      srv-url: ${default-url}
-  parameters:
-    buildpack: nodejs_buildpack
-  build-parameters:
-    builder: npm-ci
-- name: Cinema-db-deployer
-  type: hdb
-  path: gen/db
-  requires:
-  - name: Cinema-db
-    properties:
-      TARGET_CONTAINER: ~{hdi-container-name}
-  - name: cross-container-service-1
-    group: SERVICE_REPLACEMENTS
-    properties:
-      key: ServiceName_1
-      service: ~{the-service-name}
-  parameters:
-    buildpack: nodejs_buildpack
+  - name: Cinema-srv
+    type: nodejs
+    path: gen/srv
+    requires:
+      - name: Cinema-db
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    parameters:
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm-ci
+  - name: Cinema-db-deployer
+    type: hdb
+    path: gen/db
+    requires:
+      - name: Cinema-db
+        properties:
+          TARGET_CONTAINER: ~{hdi-container-name}
+      - name: cross-container-service-1
+        group: SERVICE_REPLACEMENTS
+        properties:
+          key: ServiceName_1
+          service: ~{the-service-name}
+      - name: cross-container-service-2
+        group: SERVICE_REPLACEMENTS
+        properties:
+          key: ServiceName_2
+          service: ~{the-service-name}
+    parameters:
+      buildpack: nodejs_buildpack
 resources:
-- name: Cinema-db
-  type: com.sap.xs.hdi-container
-  parameters:
-    service: hana
-    service-plan: hdi-shared
-  properties:
-    hdi-container-name: ${service-name}
-- name: cross-container-service-1
-  type: org.cloudfoundry.existing-service
-  parameters:
-    service-name: labs-hdi-container
-  properties:
-    the-service-name: ${service-name}
+  - name: Cinema-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+    properties:
+      hdi-container-name: ${service-name}
+  - name: cross-container-service-1
+    type: org.cloudfoundry.existing-service
+    parameters:
+      service-name: labs-hdi-container
+    properties:
+      the-service-name: ${service-name}
+  - name: cross-container-service-2
+    type: org.cloudfoundry.existing-service
+    parameters:
+      service-name: labs-hdi-container
+    properties:
+      the-service-name: ${service-name}
 parameters:
   enable-parallel-deployments: true
 build-parameters:
   before-all:
-  - builder: custom
-    commands:
-    - npx -p @sap/cds-dk cds build --production
+    - builder: custom
+      commands:
+        - npx -p @sap/cds-dk cds build --production
